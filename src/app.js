@@ -1,26 +1,16 @@
-const express = require("express");
-
+const express = require('express');
 const app = express();
 
-app.listen(3000,() => {
-    console.log("Server Success");
-})
 
-// app.use((req,res) => {
-//     res.send("Hello");
-// })
+app.get('/user', (req,res) => {
+    res.send({firstname:"Jasdeep",lastname:"Singh"});
+});
 
-app.use("/",(req,res) => {
-    res.send("This is how kk");
-})
-app.use("/home",(req,res) => {
-    res.send("Hello");
-})
+app.post('/user', (req,res) => {
+    res.send("Saved data ");
+});
 
-app.use("/test",(req,res) => {
-    res.send("test");
-})
 
-app.use("/jj",(req,res) => {
-    res.send("jj");
-})
+app.listen(3000, () => {
+    console.log('Server is running on port 3000');
+});
