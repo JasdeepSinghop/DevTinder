@@ -2,8 +2,11 @@ const express = require("express");
 const connectDB = require("./config/database");
 const app = express();
 const User = require("./models/user");
+const {validateSignUpData} = require("./utils/validation");
+const bcrypt = require("bcrypt");
 
 app.use(express.json());
+
 // --------------------- Signup api ----------------------------------
 app.post("/signup", async (req, res) => {
   // console.log(req.body);
@@ -25,15 +28,60 @@ app.post("/signup", async (req, res) => {
   //          password : "65789678",
   //         });
 
-  const user = new User(req.body);
-
   try {
+
+   //Validation of the data
+   validateSignUpData(req);
+
+   //Encrypt the password and then store the user into database
+   const {firstName,lastName,emailId,password} = req.body;
+
+   const passwordHash = await bcrypt.hash(password,10);
+   console.log(passwordHash);
+
+ 
+   //Creating new instance of User model
+  //  const user = new User(req.body); bad way to send data or make new instance 
+  // Always send data or make instance by explecitly typing it 
+  //  const user = new User(req.body);
+   const user = new User({firstName,lastName,emailId,password:passwordHash});
+
     await user.save();
     res.send("User added sucessfully");
   } catch (err) {
-    res.status(400).send("Data is not added : " + err.message);
+    res.status(400).send("Error : " + err.message);
   }
 });
+
+//--------------------- Login Api ------------------------ 
+
+app.post("/login",async(req,res)=>{
+
+  try{
+
+    const {emailId,password} = req.body;
+
+    const user = await User.findOne({emailId:emailId});
+
+    if(!user){
+      // throw new Error("EmailId is not present in Db");
+      throw new Error("Invalid cradentials");
+    }
+
+    const isPasswordValid = await bcrypt.compare(password,user.password);
+
+    if(isPasswordValid){
+      res.send("User Login Succesfull!!!!!");
+    }else{
+      // throw new Error("Password is not valid");
+      throw new Error("Invalid cradentials");
+    }
+
+  }catch(err){
+    res.status(400).send("Error :" + err.message);
+  }
+
+})
 
 //--------------------------- Feed get api -/feed -----------------------------
 // this api get all the users from the database
@@ -105,6 +153,8 @@ app.patch("/user/:userId", async (req, res) => {
     res.status(400).send("Update Failed : " + err.message);
   }
 });
+
+//----------- Database Connection ------------
 
 connectDB()
   .then(() => {
