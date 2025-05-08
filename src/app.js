@@ -4,6 +4,7 @@ const app = express();
 const cookieParser = require("cookie-parser");
 const {userAuth} = require("./middlewares/auth");
 const cors = require("cors");
+require("dotenv").config();
 
 app.use(cors({
   //! Our backend should know from where our frontend is hosted
@@ -107,7 +108,7 @@ app.use("/",userRouter);
 connectDB()
   .then(() => {
     console.log("Database Connected");
-    app.listen(3000, () => {
+    app.listen(process.env.PORT, () => {
       console.log("Server is running on port 3000");
     });
   })
