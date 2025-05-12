@@ -4,6 +4,8 @@ const app = express();
 const cookieParser = require("cookie-parser");
 const {userAuth} = require("./middlewares/auth");
 const cors = require("cors");
+const http = require("http");
+
 require("dotenv").config();
 
 app.use(cors({
@@ -18,6 +20,7 @@ const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
+const initializeSocket = require("./utils/socket");
 
 app.use("/",authRouter);
 app.use("/",profileRouter);
@@ -105,10 +108,17 @@ app.use("/",userRouter);
 
 //----------- Database Connection ------------
 
+
+//! Creating a server for socket
+const server = http.createServer(app);
+
+//! From another file utils-> socket.js
+initializeSocket(server);
+
 connectDB()
   .then(() => {
     console.log("Database Connected");
-    app.listen(process.env.PORT, () => {
+    server.listen(process.env.PORT, () => {
       console.log("Server is running on port 3000");
     });
   })
